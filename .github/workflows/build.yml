@@ -95,10 +95,10 @@ jobs:
           path: .
           
       - name: Create Release
-        uses: softprops/action-gh-release@v2
-        with:
-          files: picoclaw-magisk.zip
-          generate_release_notes: true
-          draft: false
+        run: |
+          # Remove existing release if exists
+          gh release delete ${{ github.ref_name }} --yes || true
+          # Create new release
+          gh release create ${{ github.ref_name }} picoclaw-magisk.zip --title "PicoClaw Magisk ${{ github.ref_name }}" --notes "PicoClaw Magisk Module ${{ github.ref_name }}"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
