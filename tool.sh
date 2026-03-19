@@ -121,9 +121,10 @@ start_picoclaw() {
   log_info "启动 PicoClaw Gateway..."
   
   cd "$MODDIR"
-  export PICOCLAW_HOME
   
-  nohup "$PICOCLAW" gateway > "$LOGFILE" 2>&1 &
+  # 设置 HOME 环境变量，让 picoclaw 能找到 ~/.picoclaw/config.json
+  # 使用 -E 允许无默认模型启动
+  HOME="$PICOCLAW_HOME" nohup "$PICOCLAW" gateway -E > "$LOGFILE" 2>&1 &
   local pid=$!
   
   sleep 5
