@@ -50,8 +50,13 @@ jobs:
       - name: Build picoclaw-web (Android ARM64)
         run: |
           cd picoclaw/web
+          # Copy built frontend
           cp -r frontend/dist backend/
-          CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -ldflags="-s -w" -o picoclaw-web-android backend/main.go
+          # Generate embed files
+          cd backend
+          go generate ./...
+          # Build
+          CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -ldflags="-s -w" -o picoclaw-web-android .
           
       - name: Create Magisk Module
         run: |
@@ -59,7 +64,7 @@ jobs:
           
           # Copy binaries (use Android version)
           cp picoclaw/picoclaw-android picoclaw-magisk/picoclaw
-          cp picoclaw/web/picoclaw-web-android picoclaw-magisk/picoclaw-web
+          cp picoclaw/web/backend/picoclaw-web-android picoclaw-magisk/picoclaw-web
           
           # Copy module files
           cp module.prop picoclaw-magisk/
@@ -69,18 +74,13 @@ jobs:
         run: |
           cd picoclaw-magisk
           zip -r ../picoclaw-magisk.zip .
-          
-      - name: Upload Release Asset
-        uses: actions/upload-release-asset@v1
-        if: startsWith(github.ref, 'refs/tags/')
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ github.event.release.upload_url }}
-          asset_path: ./picoclaw-magisk.zip
-          asset_name: picoclaw-magisk.zip
-          asset_content_type: application/zip
 
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: picoclaw-magisk
+          path: picoclaw-magisk.zip
+          
   release:
     needs: build
     runs-on: ubuntu-latest
@@ -90,7 +90,7 @@ jobs:
       - name: Download artifact
         uses: actions/download-artifact@v4
         with:
-          name: picoclaw-magisk.zip
+          name: picoclaw-magisk
           
       - name: Create Release
         uses: softprops/action-gh-release@v2
