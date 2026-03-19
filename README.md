@@ -5,189 +5,117 @@
 <h1 align="center">PicoClaw Magisk Module</h1>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Version-v0.2.3-blue?style=flat-square" alt="Version">
+  <a href="https://github.com/232252/picoclaw-magisk/releases/latest">
+    <img src="https://img.shields.io/github/v/release/232252/picoclaw-magisk?style=flat-square" alt="Release">
+  </a>
   <img src="https://img.shields.io/badge/Platform-Android%20ARM64-green?style=flat-square" alt="Platform">
   <img src="https://img.shields.io/badge/License-MIT-orange?style=flat-square" alt="License">
-  <img src="https://img.shields.io/badge/PicoClaw-25K%20%E2%AD%90-yellow?style=flat-square" alt="Stars">
 </p>
 
-<p align="center">
-  🦐 PicoClaw Magisk 模块 — 在你的 Android 设备上运行 ultra-lightweight AI 助手
-</p>
+> 🦐 在你的 Android 设备上运行 ultra-lightweight AI 助手
+
+---
+
+## 📥 下载安装
+
+### 方法一：直接下载 ZIP（推荐）
+
+点击下载最新版本：
+**[📦 picoclaw-magisk.zip](https://github.com/232252/picoclaw-magisk/releases/latest/download/picoclaw-magisk.zip)**
+
+然后：
+1. 打开 **Magisk Manager** → **模块** → **从存储安装**
+2. 选择下载的 `picoclaw-magisk.zip`
+
+### 方法二：ADB 安装
+
+```bash
+adb push picoclaw-magisk.zip /sdcard/Download/
+adb shell "su -c 'cp /sdcard/Download/picoclaw-magisk.zip /data/adb/modules/'"
+adb reboot
+```
 
 ---
 
 ## ✨ 功能特性
 
-- **🚀 超轻量级** — 仅需 <25MB 内存，<1秒启动
-- **🤖 多渠道支持** — 飞书、Telegram、Discord、Slack、QQ 等
-- **🌐 Web Dashboard** — 完整的可视化配置界面
-- **🧠 多模型支持** — OpenAI、Claude、Gemini、MiniMax 等
-- **🔧 Magisk 模块化** — 一键安装，自动启动
-
----
-
-## 📦 快速开始
-
-### 安装要求
-
-- Android 设备 (ARM64/aarch64)
-- 已 root (Magisk)
-- 设备 IP 和 ADB 连接
-
-### 安装步骤
-
-**方法一：直接推送（推荐）**
-
-```bash
-# 连接设备
-adb connect <你的设备IP>:5555
-
-# 克隆本仓库
-git clone https://github.com/YOUR_USERNAME/picoclaw-magisk.git
-cd picoclaw-magisk
-
-# 一键安装
-chmod +x install.sh
-./install.sh
-```
-
-**方法二：手动安装**
-
-```bash
-# 1. 推送模块到设备
-adb push picoclaw /data/adb/modules/picoclaw/
-adb push picoclaw-web /data/adb/modules/picoclaw/
-adb push module.prop /data/adb/modules/picoclaw/
-adb push service.sh /data/adb/modules/picoclaw/
-
-# 2. 设置权限
-adb shell su -c "chmod 755 /data/adb/modules/picoclaw/*"
-
-# 3. 重启 Magisk 或手动启动
-adb shell su -c "touch /data/adb/modules/picoclaw/auto_mount"
-```
+| 功能 | 描述 |
+|------|------|
+| 🌐 Web Dashboard | 可视化配置界面 |
+| 🤖 AI 模型 | OpenAI、Claude、Gemini、MiniMax 等 |
+| 💬 多渠道 | 飞书、Telegram、Discord、Slack |
+| 🔄 自动更新 | GitHub Actions 自动编译 |
+| ⚡ 即插即用 | Magisk 模块化，一键安装 |
 
 ---
 
 ## 🔧 配置
 
-### 1. 启动服务
+### 1. 访问 Web Dashboard
 
-重启后 PicoClaw 会自动启动，或手动启动：
-
-```bash
-adb shell su -c "PICOCLAW_HOME=/data/adb/picoclaw nohup /data/adb/modules/picoclaw/picoclaw-web -public -port 12088 > /data/adb/picoclaw/web.log 2>&1 &"
-```
-
-### 2. 访问 Web Dashboard
-
+重启后访问：
 ```
 http://<设备IP>:12088
 ```
 
-### 3. 配置 AI 模型
+查找设备 IP：
+```bash
+adb shell "ip route get 1"
+```
 
-在 Web Dashboard 中：
-1. 进入 **模型** 页面
-2. 添加你的 API Key
-3. 选择默认模型
+### 2. 配置 AI 模型
 
-支持的模型提供商：
+1. 打开 Web Dashboard
+2. 进入 **模型** 页面
+3. 添加 API Key
 
-| 提供商 | 状态 |
-|--------|------|
-| OpenAI (GPT-4) | ✅ |
-| Anthropic (Claude) | ✅ |
-| Google (Gemini) | ✅ |
-| MiniMax | ✅ |
-| 智谱 AI | ✅ |
-| Kimi | ✅ |
-| OpenRouter | ✅ |
+### 3. 启用消息渠道
 
-### 4. 配置消息渠道
-
-在 Web Dashboard 中：
-1. 进入 **频道** 页面
-2. 选择要启用的渠道
-3. 填入 Bot Token / App credentials
-
-支持的频道：
-
-| 频道 | 状态 |
-|------|------|
-| 飞书 | ✅ |
-| Telegram | ✅ |
-| Discord | ✅ |
-| Slack | ✅ |
-| QQ | 🔜 |
-| WhatsApp | 🔜 |
+支持：
+- ✅ 飞书
+- ✅ Telegram  
+- ✅ Discord
+- ✅ Slack
 
 ---
 
-## 📁 目录结构
+## 🔄 自动更新
 
+新版本会通过 GitHub Actions 自动编译。
+
+检查更新：
+```bash
+adb shell "su -c 'sh /data/adb/picoclaw/check-update.sh'"
 ```
-picoclaw-magisk/
-├── module.prop          # 模块信息
-├── service.sh          # 自动启动脚本
-├── picoclaw            # 主程序 (ARM64)
-├── picoclaw-web        # Web Dashboard (ARM64)
-├── scripts/
-│   └── install.sh      # 安装脚本
-└── README.md
-```
-
----
-
-## 🔄 更新日志
-
-### v0.2.3 (2026-03-19)
-- ✨ 初始版本
-- 🦐 PicoClaw v0.2.3
-- 🌐 Web Dashboard 集成
-- 📱 Magisk 模块化
 
 ---
 
 ## ❓ 常见问题
 
-**Q: 端口被占用怎么办？**
+**端口被占用？**
 ```bash
-# 查看占用端口的进程
-adb shell su -c "ss -tlnp | grep <端口>"
+# 查看端口
+adb shell "su -c 'ss -tlnp | grep 12088'"
 
 # 修改 service.sh 中的 WEB_PORT
 ```
 
-**Q: 如何查看日志？**
+**卸载**
 ```bash
-adb shell su -c "cat /data/adb/picoclaw/web.log"
-adb shell su -c "cat /data/adb/picoclaw/picoclaw.log"
-```
-
-**Q: 如何卸载？**
-```bash
-adb shell su -c "rm -rf /data/adb/modules/picoclaw"
-adb shell su -c "rm -rf /data/adb/picoclaw"
+adb shell "su -c 'rm -rf /data/adb/modules/picoclaw /data/adb/picoclaw'"
+adb reboot
 ```
 
 ---
 
 ## 📚 相关链接
 
-- 🦐 [PicoClaw 官方仓库](https://github.com/sipeed/picoclaw)
-- 📖 [PicoClaw 文档](https://docs.picoclaw.io)
-- 🌐 [PicoClaw 官网](https://picoclaw.io)
-
----
-
-## 📄 License
-
-MIT License - 详见 [LICENSE](LICENSE) 文件
+- [🦐 PicoClaw 官方](https://github.com/sipeed/picoclaw)
+- [📖 文档](https://docs.picoclaw.io)
+- [🔧 GitHub Actions](https://github.com/232252/picoclaw-magisk/actions)
 
 ---
 
 <p align="center">
-  Made with ❤️ for the PicoClaw community
+  MIT License | Made with ❤️
 </p>

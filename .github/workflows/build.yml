@@ -1,0 +1,102 @@
+name: Build Magisk Module
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.25'
+          
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          
+      - name: Install pnpm
+        run: npm install -g pnpm
+
+      - name: Clone PicoClaw
+        run: |
+          git clone --depth 1 https://github.com/sipeed/picoclaw.git
+          
+      - name: Prepare workspace for embed
+        run: |
+          mkdir -p picoclaw/cmd/picoclaw/internal/onboard/workspace
+          cp -r picoclaw/workspace/* picoclaw/cmd/picoclaw/internal/onboard/workspace/
+          
+      - name: Build picoclaw (Linux)
+        run: |
+          cd picoclaw
+          go build -ldflags="-s -w" -o picoclaw ./cmd/picoclaw
+          
+      - name: Build picoclaw (Android ARM64)
+        run: |
+          cd picoclaw
+          CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -ldflags="-s -w" -o picoclaw-android ./cmd/picoclaw
+          
+      - name: Build Web UI
+        run: |
+          cd picoclaw/web/frontend
+          pnpm install
+          pnpm run build
+          
+      - name: Build picoclaw-web (Linux)
+        run: |
+          cd picoclaw/web
+          cp -r frontend/dist backend/
+          CGO_ENABLED=0 go build -ldflags="-s -w" -o picoclaw-web backend/main.go
+          
+      - name: Build picoclaw-web (Android ARM64)
+        run: |
+          cd picoclaw/web
+          CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -ldflags="-s -w" -o picoclaw-web-android backend/main.go
+          
+      - name: Create Magisk Module
+        run: |
+          mkdir -p picoclaw-magisk
+          
+          # Copy binaries
+          cp picoclaw/cmd/picoclaw/picoclaw picoclaw-magisk/
+          cp picoclaw/web/picoclaw-web-android picoclaw-magisk/picoclaw-web
+          
+          # Copy module files
+          cp module.prop picoclaw-magisk/
+          cp service.sh picoclaw-magisk/
+          cp customize.sh picoclaw-magisk/
+          
+          # Create META-INF
+          mkdir -p picoclaw-magisk/META-INF/com/google/android
+          
+      - name: Create ZIP
+        run: |
+          cd picoclaw-magisk
+          zip -r ../picoclaw-magisk.zip .
+          
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: picoclaw-magisk.zip
+          body: |
+            ## Download
+            
+            Install the `picoclaw-magisk.zip` via Magisk Manager.
+            
+            ## What's New
+            
+            - PicoClaw v${{ github.ref_name }}
+            - Web Dashboard included
+            - Auto-start with Magisk
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
