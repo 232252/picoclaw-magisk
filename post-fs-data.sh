@@ -1,14 +1,13 @@
 #!/system/bin/sh
-# PicoClaw Magisk Module - 权限修复脚本
-# 在模块挂载后立即执行，修复 unzip 解压后的权限问题
+# PicoClaw Magisk Module - post-fs-data 脚本
+# 在模块挂载后立即执行，修复权限
 
 MODDIR=${0%/*}
 
-# 修复所有可执行文件和脚本的权限
-chmod 755 "${MODDIR}"/*.sh "${MODDIR}/picoclaw" "${MODDIR}/picoclaw-web" 2>/dev/null
+# 修复二进制文件权限
+chmod 755 "$MODDIR/bin/picoclaw" "$MODDIR/bin/picoclaw-web" 2>/dev/null
+chmod 755 "$MODDIR/tool.sh" "$MODDIR/service.sh" "$MODDIR/action.sh" 2>/dev/null
 
-# 创建必要的目录
+# 确保目录存在
 mkdir -p /sdcard/picoclaw/workspace
-mkdir -p /sdcard/picoclaw/workspace/skills
-mkdir -p /sdcard/picoclaw/workspace/memory
-mkdir -p /sdcard/picoclaw/logs
+mkdir -p /sdcard/picoclaw/log

@@ -1,6 +1,7 @@
 id=picoclaw
 name=PicoClaw AI Assistant
-version=v0.3.0
-versionCode=300
-author=PicoClaw Team
-description=PicoClaw AI助手 | [状态]启动中... | Web: http://IP:12088
+version=v0.2.5
+versionCode=205
+author=232252
+description=PicoClaw AI助手 | [状态]运行中 | Web: http://IP:12088
+updateJson=https://raw.githubusercontent.com/232252/picoclaw-magisk/master/updateJson.json

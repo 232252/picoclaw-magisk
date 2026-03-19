@@ -1,0 +1,6 @@
+{
+  "version": "v0.2.5",
+  "versionCode": 205,
+  "zipUrl": "https://github.com/232252/picoclaw-magisk/releases/download/v0.2.5/picoclaw-magisk-v0.2.5.zip",
+  "changelog": "修复守护进程和服务启动问题，参考 zeroclaw-magisk 设计"
+}

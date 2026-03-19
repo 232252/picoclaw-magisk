@@ -1,62 +1,94 @@
-#!/data/adb/magisk/busybox sh
-# PicoClaw Magisk Module - 服务脚本
-# 在系统启动后执行，启动守护进程
+#!/system/bin/sh
+# PicoClaw Magisk Module - 服务启动脚本
 
 MODDIR=${0%/*}
-PICOCLAW_HOME="/sdcard/picoclaw"
-LOG_DIR="${PICOCLAW_HOME}/logs"
-LOG_FILE="${LOG_DIR}/service.log"
 
-mkdir -p "${LOG_DIR}"
-chmod 755 ${MODDIR}/*
+# 引入公共函数
+. "$MODDIR/tool.sh"
 
-# 日志函数
-log() {
-    local message="$(date "+%Y-%m-%d %H:%M:%S") $1"
-    echo "$message"
-    echo "$message" >> "${LOG_FILE}"
+# 等待系统就绪
+wait_for_system() {
+  local timeout=120
+  local count=0
+  
+  log_info "等待系统启动..."
+  
+  # 等待 /system 挂载
+  while [ ! -d "/system/bin" ] && [ $count -lt $timeout ]; do
+    sleep 1
+    count=$((count + 1))
+  done
+  
+  # 等待 boot 完成
+  count=0
+  while [ "$(getprop sys.boot_completed)" != "1" ] && [ $count -lt $timeout ]; do
+    sleep 2
+    count=$((count + 2))
+  done
+  
+  # 等待存储就绪
+  count=0
+  while [ ! -d "/sdcard" ] && [ $count -lt $timeout ]; do
+    sleep 1
+    count=$((count + 1))
+  done
+  
+  # 等待网络就绪
+  count=0
+  while [ $count -lt 15 ]; do
+    if ping -c 1 -W 2 8.8.8.8 > /dev/null 2>&1; then
+      log_info "网络就绪"
+      break
+    fi
+    sleep 2
+    count=$((count + 2))
+  done
+  
+  log_info "系统就绪"
 }
 
-# 等待系统启动完成
-log "开始启动 PicoClaw 服务，等待系统启动完成..."
-echo "开始启动 PicoClaw 服务..."
+# 启动服务（带重试）
+start_service() {
+  local max_retries=3
+  local retry=0
+  
+  while [ $retry -lt $max_retries ]; do
+    log_info "启动 PicoClaw 服务 (尝试 $((retry + 1))/$max_retries)..."
+    
+    # 修复权限
+    chmod 755 "$MODDIR/bin/picoclaw" "$MODDIR/bin/picoclaw-web" 2>/dev/null
+    chmod 755 "$MODDIR/tool.sh" 2>/dev/null
+    
+    # 初始化目录
+    init_dirs
+    
+    # 启动服务
+    if start_all; then
+      sleep 3
+      if is_picoclaw_running && is_web_running; then
+        log_info "PicoClaw 服务启动成功"
+        update_description running
+        return 0
+      fi
+    fi
+    
+    retry=$((retry + 1))
+    log_error "启动失败，${retry}s 后重试..."
+    sleep 5
+  done
+  
+  log_error "PicoClaw 服务启动失败"
+  update_description error
+  return 1
+}
 
-while [ "$(getprop sys.boot_completed)" != "1" ]; do
-    sleep 5s
-done
+# 主逻辑
+log_info "=== PicoClaw 服务启动中 ==="
 
-log "系统启动完成"
+# 等待系统就绪
+wait_for_system
 
-# 创建工作目录
-mkdir -p "${PICOCLAW_HOME}/workspace"
-mkdir -p "${PICOCLAW_HOME}/workspace/skills"
-mkdir -p "${PICOCLAW_HOME}/workspace/memory"
-mkdir -p "${PICOCLAW_HOME}/logs"
+# 启动服务
+start_service
 
-# 获取唤醒锁防止系统休眠
-echo "获取唤醒锁"
-log "获取唤醒锁"
-echo "PowerManagerService.noSuspend" > /sys/power/wake_lock
-
-# 更新模块状态
-sed -i 's/^description=.*/description=PicoClaw AI助手 | [状态]启动中.../' "$MODDIR/module.prop"
-log "模块状态已更新为启动中"
-
-# 等待网络就绪
-log "等待网络就绪..."
-sleep 10s
-log "网络就绪"
-
-# 启动核心守护进程
-log "启动 PicoClaw 守护进程..."
-echo "启动 PicoClaw 守护进程..."
-"${MODDIR}/picoclaw_core.sh" &
-
-# 释放唤醒锁
-sleep 2
-echo "释放唤醒锁"
-log "释放唤醒锁"
-echo "PowerManagerService.noSuspend" > /sys/power/wake_unlock
-
-log "PicoClaw 服务启动完成"
-echo "PicoClaw 服务启动完成"
+log_info "=== 启动流程完成 ==="
