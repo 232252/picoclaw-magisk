@@ -5,11 +5,6 @@ on:
     tags:
       - 'v*'
   workflow_dispatch:
-    inputs:
-      version:
-        description: 'Version tag (e.g. v0.2.5)'
-        required: false
-        type: string
 
 env:
   PICOCLAW_VERSION: nightly
@@ -23,13 +18,8 @@ jobs:
       
       - name: Download official picoclaw binary
         run: |
-          # Download official nightly build for ARM64
           wget -q "https://github.com/sipeed/picoclaw/releases/download/${PICOCLAW_VERSION}/picoclaw_Linux_arm64.tar.gz" -O picoclaw.tar.gz
           tar -xzf picoclaw.tar.gz
-          ls -la picoclaw*
-          
-      - name: Set permissions
-        run: |
           chmod +x picoclaw
           
       - name: Create module directory
@@ -49,7 +39,6 @@ jobs:
         run: |
           cd picoclaw-module
           zip -r ../picoclaw-magisk.zip .
-          cd ..
           ls -la picoclaw-magisk.zip
 
       - name: Upload artifact
@@ -62,7 +51,7 @@ jobs:
   release:
     needs: build
     runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/') || github.event.inputs.version != ''
+    if: startsWith(github.ref, 'refs/tags/')
     
     steps:
       - uses: actions/checkout@v4
@@ -77,6 +66,6 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: picoclaw-magisk.zip
-          generate_release_notes: true
+          generate_release_notes: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
