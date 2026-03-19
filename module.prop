@@ -1,6 +1,6 @@
 id=picoclaw
 name=PicoClaw AI Assistant
-version=v0.2.3
-versionCode=203
+version=v0.2.4
+versionCode=204
 author=PicoClaw Team
-description=Ultra-lightweight AI Assistant with Web Dashboard. Supports Feishu, Telegram, Discord, Slack and more. Download: github.com/232252/picoclaw-magisk/releases
+description=Ultra-lightweight AI Assistant with Web Dashboard. Workspace: /sdcard/picoclaw/workspace. Web: http://IP:12088

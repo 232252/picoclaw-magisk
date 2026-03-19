@@ -3,28 +3,16 @@
 
 MODDIR=${0%/*}
 PICOCLAW_DIR=/data/adb/picoclaw
-WEB_PORT=9088
+PICOCLAW_HOME=/sdcard/picoclaw
+WEB_PORT=12088
 
 # Set environment
-export PICOCLAW_HOME=$PICOCLAW_DIR
+export PICOCLAW_HOME=/sdcard/picoclaw
 
-# Create directory
-mkdir -p $PICOCLAW_DIR
-
-# Copy binaries if not exists
-if [ ! -f "$PICOCLAW_DIR/picoclaw" ]; then
-    cp $MODDIR/picoclaw $PICOCLAW_DIR/
-    chmod 755 $PICOCLAW_DIR/picoclaw
-fi
-
-if [ ! -f "$PICOCLAW_DIR/picoclaw-web" ]; then
-    cp $MODDIR/picoclaw-web $PICOCLAW_DIR/
-    chmod 755 $PICOCLAW_DIR/picoclaw-web
-fi
-
-# Set permissions
-chmod 755 $PICOCLAW_DIR/picoclaw
-chmod 755 $PICOCLAW_DIR/picoclaw-web
+# Create workspace
+mkdir -p /sdcard/picoclaw/workspace
+mkdir -p /sdcard/picoclaw/workspace/skills
+mkdir -p /sdcard/picoclaw/workspace/memory
 
 # Kill existing processes
 pkill picoclaw 2>/dev/null
@@ -32,13 +20,13 @@ pkill picoclaw-web 2>/dev/null
 sleep 1
 
 # Start picoclaw core in background
-cd $PICOCLAW_DIR
-nohup $PICOCLAW_DIR/picoclaw gateway --allow-empty > $PICOCLAW_DIR/picoclaw.log 2>&1 &
+cd /data/adb/picoclaw
+nohup /data/adb/picoclaw/picoclaw gateway --allow-empty > /data/adb/picoclaw/picoclaw.log 2>&1 &
 
 # Wait for core to start
 sleep 3
 
-# Start web dashboard
-nohup $PICOCLAW_DIR/picoclaw-web -public -port $WEB_PORT > $PICOCLAW_DIR/web.log 2>&1 &
+# Start web dashboard (bind to 0.0.0.0 for LAN access)
+nohup /data/adb/picoclaw/picoclaw-web -public -port 12088 > /data/adb/picoclaw/web.log 2>&1 &
 
-log -t PicoClaw "PicoClaw started on port $WEB_PORT"
+log -t PicoClaw "PicoClaw started on port 12088"
