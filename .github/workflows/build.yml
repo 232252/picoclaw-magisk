@@ -21,6 +21,7 @@ jobs:
           wget -q "https://github.com/sipeed/picoclaw/releases/download/${PICOCLAW_VERSION}/picoclaw_Linux_arm64.tar.gz" -O picoclaw.tar.gz
           tar -xzf picoclaw.tar.gz
           chmod +x picoclaw
+          ls -la picoclaw
           
       - name: Create module directory
         run: |
@@ -34,11 +35,13 @@ jobs:
           cp tool.sh picoclaw-module/
           cp uninstall.sh picoclaw-module/
           cp config.json picoclaw-module/
+          ls -la picoclaw-module/
           
       - name: Create ZIP
         run: |
           cd picoclaw-module
           zip -r ../picoclaw-magisk.zip .
+          cd ..
           ls -la picoclaw-magisk.zip
 
       - name: Upload artifact
