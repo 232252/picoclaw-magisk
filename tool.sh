@@ -87,7 +87,7 @@ update_description() {
   local status="$1"
   case "$status" in
     running)
-      sed -i "s|^description=.*|description=PicoClaw AI助手 | [状态]运行中 | Gateway: http://IP:${WEBPORT}|" "$MODDIR/module.prop" 2>/dev/null
+      sed -i "s|^description=.*|description=PicoClaw AI助手 v0.3.1 | Web: http://IP:18800 | Gateway: http://IP:18790|" "$MODDIR/module.prop" 2>/dev/null
       ;;
     stopped)
       sed -i "s|^description=.*|description=PicoClaw AI助手 | [状态]已停止|" "$MODDIR/module.prop" 2>/dev/null
@@ -111,20 +111,26 @@ check_config() {
   fi
 }
 
-# 启动 PicoClaw Gateway
+# 启动 PicoClaw Gateway + Web UI
 start_picoclaw() {
   if is_picoclaw_running; then
     echo "PicoClaw 已在运行 (PID: $(get_pid))"
     return 0
   fi
   
-  log_info "启动 PicoClaw Gateway..."
+  log_info "启动 PicoClaw Gateway + Web UI..."
   
   cd "$MODDIR"
   
-  # 设置 HOME 环境变量，让 picoclaw 能找到 ~/.picoclaw/config.json
-  # 使用 -E 允许无默认模型启动
-  HOME="$PICOCLAW_HOME" nohup "$PICOCLAW" gateway -E > "$LOGFILE" 2>&1 &
+  # 修复权限
+  chmod 755 "$MODDIR/picoclaw" 2>/dev/null
+  chmod 755 "$MODDIR/picoclaw-launcher" 2>/dev/null
+  
+  # picoclaw-launcher 会自动启动 gateway 和 Web UI
+  # HOME 设置为 /sdcard 让它能写入配置
+  # -public 监听所有接口
+  # -port 18800 Web UI 端口
+  HOME="$PICOCLAW_HOME" "$MODDIR/picoclaw-launcher" -public -port 18800 "$CONFIG" &
   local pid=$!
   
   sleep 5

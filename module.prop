@@ -1,7 +1,7 @@
 id=picoclaw
 name=PicoClaw AI Assistant
-version=v0.3.0
-versionCode=300
+version=v0.3.1
+versionCode=301
 author=232252
-description=PicoClaw AI助手 v0.3.0 | 官方 ARM64 二进制 | Gateway: 18790 | 配置: /sdcard/picoclaw/
+description=PicoClaw AI助手 v0.3.1 | Web: http://IP:18800 | Gateway: http://IP:18790
 updateJson=https://github.com/232252/picoclaw-magisk/releases/latest/download/update.json
