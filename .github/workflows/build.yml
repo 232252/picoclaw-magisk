@@ -28,17 +28,13 @@ jobs:
 
       - name: Clone PicoClaw
         run: |
+          rm -rf picoclaw 2>/dev/null || true
           git clone --depth 1 https://github.com/sipeed/picoclaw.git
           
       - name: Prepare workspace for embed
         run: |
           mkdir -p picoclaw/cmd/picoclaw/internal/onboard/workspace
           cp -r picoclaw/workspace/* picoclaw/cmd/picoclaw/internal/onboard/workspace/
-          
-      - name: Build picoclaw (Linux)
-        run: |
-          cd picoclaw
-          go build -ldflags="-s -w" -o picoclaw ./cmd/picoclaw
           
       - name: Build picoclaw (Android ARM64)
         run: |
@@ -51,52 +47,55 @@ jobs:
           pnpm install
           pnpm run build
           
-      - name: Build picoclaw-web (Linux)
-        run: |
-          cd picoclaw/web
-          cp -r frontend/dist backend/
-          CGO_ENABLED=0 go build -ldflags="-s -w" -o picoclaw-web backend/main.go
-          
       - name: Build picoclaw-web (Android ARM64)
         run: |
           cd picoclaw/web
+          cp -r frontend/dist backend/
           CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -ldflags="-s -w" -o picoclaw-web-android backend/main.go
           
       - name: Create Magisk Module
         run: |
           mkdir -p picoclaw-magisk
           
-          # Copy binaries
-          cp picoclaw/cmd/picoclaw/picoclaw picoclaw-magisk/
+          # Copy binaries (use Android version)
+          cp picoclaw/picoclaw-android picoclaw-magisk/picoclaw
           cp picoclaw/web/picoclaw-web-android picoclaw-magisk/picoclaw-web
           
           # Copy module files
           cp module.prop picoclaw-magisk/
           cp service.sh picoclaw-magisk/
-          cp customize.sh picoclaw-magisk/
-          
-          # Create META-INF
-          mkdir -p picoclaw-magisk/META-INF/com/google/android
           
       - name: Create ZIP
         run: |
           cd picoclaw-magisk
           zip -r ../picoclaw-magisk.zip .
           
-      - name: Create Release
-        uses: softprops/action-gh-release@v1
+      - name: Upload Release Asset
+        uses: actions/upload-release-asset@v1
         if: startsWith(github.ref, 'refs/tags/')
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: ./picoclaw-magisk.zip
+          asset_name: picoclaw-magisk.zip
+          asset_content_type: application/zip
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+    
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: picoclaw-magisk.zip
+          
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
         with:
           files: picoclaw-magisk.zip
-          body: |
-            ## Download
-            
-            Install the `picoclaw-magisk.zip` via Magisk Manager.
-            
-            ## What's New
-            
-            - PicoClaw v${{ github.ref_name }}
-            - Web Dashboard included
-            - Auto-start with Magisk
+          generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
