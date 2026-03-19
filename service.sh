@@ -56,7 +56,7 @@ start_service() {
     log_info "启动 PicoClaw 服务 (尝试 $((retry + 1))/$max_retries)..."
     
     # 修复权限
-    chmod 755 "$MODDIR/bin/picoclaw" "$MODDIR/bin/picoclaw-web" 2>/dev/null
+    chmod 755 "$MODDIR/picoclaw" 2>/dev/null
     chmod 755 "$MODDIR/tool.sh" 2>/dev/null
     
     # 初始化目录
@@ -65,7 +65,7 @@ start_service() {
     # 启动服务
     if start_all; then
       sleep 3
-      if is_picoclaw_running && is_web_running; then
+      if is_picoclaw_running; then
         log_info "PicoClaw 服务启动成功"
         update_description running
         return 0

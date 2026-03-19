@@ -5,9 +5,14 @@ on:
     tags:
       - 'v*'
   workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version tag (e.g. v0.2.5)'
+        required: false
+        type: string
 
-permissions:
-  contents: write
+env:
+  PICOCLAW_VERSION: nightly
 
 jobs:
   build:
@@ -16,79 +21,48 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       
-      - name: Set up Go
-        uses: actions/setup-go@v5
-        with:
-          go-version: '1.25'
-          
-      - name: Install Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          
-      - name: Install pnpm
-        run: npm install -g pnpm
-
-      - name: Clone PicoClaw
+      - name: Download official picoclaw binary
         run: |
-          rm -rf picoclaw 2>/dev/null || true
-          git clone --depth 1 https://github.com/sipeed/picoclaw.git
+          # Download official nightly build for ARM64
+          wget -q "https://github.com/sipeed/picoclaw/releases/download/${PICOCLAW_VERSION}/picoclaw_Linux_arm64.tar.gz" -O picoclaw.tar.gz
+          tar -xzf picoclaw.tar.gz
+          ls -la picoclaw*
           
-      - name: Prepare workspace for embed
+      - name: Set permissions
         run: |
-          mkdir -p picoclaw/cmd/picoclaw/internal/onboard/workspace
-          cp -r picoclaw/workspace/* picoclaw/cmd/picoclaw/internal/onboard/workspace/
+          chmod +x picoclaw
           
-      - name: Build picoclaw (Android ARM64)
+      - name: Create module directory
         run: |
-          cd picoclaw
-          CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -ldflags="-s -w" -o picoclaw-android ./cmd/picoclaw
-          
-      - name: Build Web UI
-        run: |
-          cd picoclaw/web/frontend
-          pnpm install
-          pnpm run build
-          
-      - name: Build picoclaw-web (Android ARM64)
-        run: |
-          cd picoclaw/web
-          # Copy built frontend
-          cp -r frontend/dist backend/
-          # Generate embed files
-          cd backend
-          go generate ./...
-          # Build
-          CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -ldflags="-s -w" -o picoclaw-web-android .
-          
-      - name: Create Magisk Module
-        run: |
-          mkdir -p picoclaw-magisk
-          
-          # Copy binaries (use Android version)
-          cp picoclaw/picoclaw-android picoclaw-magisk/picoclaw
-          cp picoclaw/web/backend/picoclaw-web-android picoclaw-magisk/picoclaw-web
-          
-          # Copy module files
-          cp module.prop picoclaw-magisk/
-          cp service.sh picoclaw-magisk/
+          mkdir -p picoclaw-module
+          cp picoclaw picoclaw-module/
+          cp module.prop picoclaw-module/
+          cp service.sh picoclaw-module/
+          cp post-fs-data.sh picoclaw-module/
+          cp customize.sh picoclaw-module/
+          cp action.sh picoclaw-module/
+          cp tool.sh picoclaw-module/
+          cp uninstall.sh picoclaw-module/
+          cp config.json picoclaw-module/
           
       - name: Create ZIP
         run: |
-          cd picoclaw-magisk
+          cd picoclaw-module
           zip -r ../picoclaw-magisk.zip .
+          cd ..
+          ls -la picoclaw-magisk.zip
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: picoclaw-magisk-${{ github.run_number }}
+          name: picoclaw-magisk
           path: picoclaw-magisk.zip
           retention-days: 5
           
   release:
     needs: build
     runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/')
+    if: startsWith(github.ref, 'refs/tags/') || github.event.inputs.version != ''
     
     steps:
       - uses: actions/checkout@v4
@@ -96,12 +70,13 @@ jobs:
       - name: Download artifact
         uses: actions/download-artifact@v4
         with:
-          name: picoclaw-magisk-${{ github.run_number }}
+          name: picoclaw-magisk
           path: .
           
       - name: Create Release
-        run: |
-          gh release delete ${{ github.ref_name }} --yes || true
-          gh release create ${{ github.ref_name }} picoclaw-magisk.zip --title "PicoClaw Magisk ${{ github.ref_name }}" --notes "PicoClaw Magisk Module ${{ github.ref_name }}"
+        uses: softprops/action-gh-release@v2
+        with:
+          files: picoclaw-magisk.zip
+          generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

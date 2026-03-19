@@ -11,7 +11,6 @@ fi
 
 # 清理 PID 文件
 rm -f "$MODDIR/picoclaw.pid"
-rm -f "$MODDIR/picoclaw-web.pid"
 
 # 注意：保留用户数据目录 /sdcard/picoclaw
 # 如需删除，取消下行注释

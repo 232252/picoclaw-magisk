@@ -23,7 +23,7 @@ main() {
     log_info "启动 PicoClaw 服务..."
     start_all
     sleep 3
-    if is_picoclaw_running && is_web_running; then
+    if is_picoclaw_running; then
       update_description running
       echo "服务已启动"
     else

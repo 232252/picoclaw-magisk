@@ -3,17 +3,14 @@
 
 MODDIR=${0%/*}
 MODNAME="picoclaw"
-BINDIR="$MODDIR/bin"
-PICOCLAW="$BINDIR/picoclaw"
-PICOCLAW_WEB="$BINDIR/picoclaw-web"
+PICOCLAW="$MODDIR/picoclaw"
 PICOCLAW_HOME="/sdcard/picoclaw"
 WORKSPACE="$PICOCLAW_HOME/workspace"
 CONFIG="$PICOCLAW_HOME/config.json"
 LOGDIR="$PICOCLAW_HOME/log"
 LOGFILE="$LOGDIR/picoclaw.log"
 PIDFILE="$MODDIR/picoclaw.pid"
-WEBPIDFILE="$MODDIR/picoclaw-web.pid"
-WEBPORT=12088
+WEBPORT=18790
 
 # 日志配置
 MAX_LOG_SIZE=10485760  # 10MB
@@ -64,10 +61,6 @@ get_pid() {
   [ -f "$PIDFILE" ] && cat "$PIDFILE" 2>/dev/null
 }
 
-get_webpid() {
-  [ -f "$WEBPIDFILE" ] && cat "$WEBPIDFILE" 2>/dev/null
-}
-
 # 检查进程是否运行
 is_running() {
   local pid=$1
@@ -76,10 +69,6 @@ is_running() {
 
 is_picoclaw_running() {
   is_running "$(get_pid)"
-}
-
-is_web_running() {
-  is_running "$(get_webpid)"
 }
 
 # 清理无效 PID 文件
@@ -91,13 +80,6 @@ cleanup_pidfile() {
       rm -f "$PIDFILE"
     fi
   fi
-  if [ -f "$WEBPIDFILE" ]; then
-    local pid
-    pid=$(get_webpid)
-    if [ -n "$pid" ] && ! is_running "$pid"; then
-      rm -f "$WEBPIDFILE"
-    fi
-  fi
 }
 
 # 更新 module.prop 状态
@@ -105,7 +87,7 @@ update_description() {
   local status="$1"
   case "$status" in
     running)
-      sed -i "s|^description=.*|description=PicoClaw AI助手 | [状态]运行中 | Web: http://IP:${WEBPORT}|" "$MODDIR/module.prop" 2>/dev/null
+      sed -i "s|^description=.*|description=PicoClaw AI助手 | [状态]运行中 | Gateway: http://IP:${WEBPORT}|" "$MODDIR/module.prop" 2>/dev/null
       ;;
     stopped)
       sed -i "s|^description=.*|description=PicoClaw AI助手 | [状态]已停止|" "$MODDIR/module.prop" 2>/dev/null
@@ -129,53 +111,29 @@ check_config() {
   fi
 }
 
-# 启动 PicoClaw
+# 启动 PicoClaw Gateway
 start_picoclaw() {
   if is_picoclaw_running; then
     echo "PicoClaw 已在运行 (PID: $(get_pid))"
     return 0
   fi
   
-  log_info "启动 PicoClaw..."
+  log_info "启动 PicoClaw Gateway..."
   
   cd "$MODDIR"
   export PICOCLAW_HOME
   
-  nohup "$PICOCLAW" gateway > "$LOGDIR/picoclaw.log" 2>&1 &
+  nohup "$PICOCLAW" gateway > "$LOGFILE" 2>&1 &
   local pid=$!
   
-  sleep 3
+  sleep 5
   
   if is_running "$pid"; then
     echo "$pid" > "$PIDFILE"
-    log_info "PicoClaw 启动成功 (PID: $pid)"
+    log_info "PicoClaw Gateway 启动成功 (PID: $pid)"
     return 0
   else
-    log_error "PicoClaw 启动失败"
-    return 1
-  fi
-}
-
-# 启动 PicoClaw Web
-start_web() {
-  if is_web_running; then
-    echo "PicoClaw Web 已在运行 (PID: $(get_webpid))"
-    return 0
-  fi
-  
-  log_info "启动 PicoClaw Web (端口: $WEBPORT)..."
-  
-  nohup "$PICOCLAW_WEB" -public -port "$WEBPORT" > "$LOGDIR/picoclaw-web.log" 2>&1 &
-  local pid=$!
-  
-  sleep 2
-  
-  if is_running "$pid"; then
-    echo "$pid" > "$WEBPIDFILE"
-    log_info "PicoClaw Web 启动成功 (PID: $pid)"
-    return 0
-  else
-    log_error "PicoClaw Web 启动失败"
+    log_error "PicoClaw Gateway 启动失败"
     return 1
   fi
 }
@@ -202,30 +160,8 @@ stop_picoclaw() {
   fi
 }
 
-# 停止 Web
-stop_web() {
-  if [ -f "$WEBPIDFILE" ]; then
-    local pid
-    pid=$(get_webpid)
-    if [ -n "$pid" ]; then
-      log_info "停止 PicoClaw Web (PID: $pid)..."
-      kill "$pid" 2>/dev/null
-      local count=0
-      while is_running "$pid" && [ $count -lt 10 ]; do
-        sleep 1
-        count=$((count + 1))
-      done
-      if is_running "$pid"; then
-        kill -9 "$pid" 2>/dev/null
-      fi
-    fi
-    rm -f "$WEBPIDFILE"
-  fi
-}
-
 # 停止所有服务
 stop_all() {
-  stop_web
   stop_picoclaw
 }
 
@@ -234,7 +170,6 @@ start_all() {
   init_dirs
   check_config
   start_picoclaw
-  start_web
 }
 
 # 显示帮助
@@ -258,7 +193,7 @@ run_cmd() {
     1|start)
       cleanup_pidfile
       start_all
-      if is_picoclaw_running && is_web_running; then
+      if is_picoclaw_running; then
         update_description running
         echo "服务已启动"
       else
@@ -275,7 +210,7 @@ run_cmd() {
       stop_all
       sleep 2
       start_all
-      if is_picoclaw_running && is_web_running; then
+      if is_picoclaw_running; then
         update_description running
         echo "服务已重启"
       else
@@ -289,11 +224,6 @@ run_cmd() {
         echo "✓ PicoClaw 运行中 (PID: $(get_pid))"
       else
         echo "✗ PicoClaw 未运行"
-      fi
-      if is_web_running; then
-        echo "✓ PicoClaw Web 运行中 (PID: $(get_webpid), 端口: $WEBPORT)"
-      else
-        echo "✗ PicoClaw Web 未运行"
       fi
       ;;
     5|log)

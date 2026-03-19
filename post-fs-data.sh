@@ -5,7 +5,7 @@
 MODDIR=${0%/*}
 
 # 修复二进制文件权限
-chmod 755 "$MODDIR/bin/picoclaw" "$MODDIR/bin/picoclaw-web" 2>/dev/null
+chmod 755 "$MODDIR/picoclaw" 2>/dev/null
 chmod 755 "$MODDIR/tool.sh" "$MODDIR/service.sh" "$MODDIR/action.sh" 2>/dev/null
 
 # 确保目录存在
