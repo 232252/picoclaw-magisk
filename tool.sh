@@ -127,13 +127,17 @@ start_picoclaw() {
   chmod 755 "$MODDIR/picoclaw-launcher" 2>/dev/null
   
   # picoclaw-launcher 会自动启动 gateway 和 Web UI
-  # HOME 设置为 /sdcard 让它能写入配置
-  # -public 监听所有接口
-  # -port 18800 Web UI 端口
-  HOME="$PICOCLAW_HOME" "$MODDIR/picoclaw-launcher" -public -port 18800 "$CONFIG" &
+  # 使用循环守护，防止 launcher 退出
+  (
+    while true; do
+      HOME="$PICOCLAW_HOME" "$MODDIR/picoclaw-launcher" -public -port 18800 "$CONFIG" >> "$LOGFILE" 2>&1
+      log_info "Launcher 退出，5秒后重启..."
+      sleep 5
+    done
+  ) &
   local pid=$!
   
-  sleep 5
+  sleep 3
   
   if is_running "$pid"; then
     echo "$pid" > "$PIDFILE"
