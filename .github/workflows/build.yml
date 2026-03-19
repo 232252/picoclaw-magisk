@@ -20,13 +20,15 @@ jobs:
         run: |
           wget -q "https://github.com/sipeed/picoclaw/releases/download/${PICOCLAW_VERSION}/picoclaw_Linux_arm64.tar.gz" -O picoclaw.tar.gz
           tar -xzf picoclaw.tar.gz
-          chmod +x picoclaw
-          ls -la picoclaw
+          chmod +x picoclaw picoclaw-launcher picoclaw-launcher-tui
+          ls -la picoclaw picoclaw-launcher
           
       - name: Create module directory
         run: |
           mkdir -p picoclaw-module
           cp picoclaw picoclaw-module/
+          cp picoclaw-launcher picoclaw-module/
+          cp picoclaw-launcher-tui picoclaw-module/
           cp module.prop picoclaw-module/
           cp service.sh picoclaw-module/
           cp post-fs-data.sh picoclaw-module/
