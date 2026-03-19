@@ -6,14 +6,15 @@
 
 - 🤖 **AI 助手** - 支持多种 AI 模型 (OpenAI, Claude, DeepSeek 等)
 - 🌐 **Web Dashboard** - 局域网访问，无需配置
-- 📁 **工作目录** - 使用 `/sdcard/picoclaw` 作为工作目录
+- 📁 **工作目录** - `/sdcard/picoclaw/workspace`
 - 💬 **Pico 协议** - 内置 Pico 协议通道
 - 🔧 **工具支持** - 文件读写、命令执行、网页搜索等
+- 🛡️ **守护进程** - 自动启动，自动恢复
 
 ## 安装
 
 1. 通过 Magisk Manager 安装 `picoclaw-magisk.zip`
-2. 重启或执行 `/data/adb/modules/picoclaw/service.sh`
+2. 重启或执行 `sh /data/adb/modules/picoclaw/action.sh start`
 
 ## 配置
 
@@ -30,11 +31,29 @@
   "agents": {
     "defaults": {
       "provider": "openai",
-      "model_name": "your-model",
-      "workspace": "/sdcard/picoclaw/workspace"
+      "model_name": "your-model-name"
     }
   }
 }
+```
+
+## 管理命令
+
+```bash
+# 启动
+sh /data/adb/modules/picoclaw/action.sh start
+
+# 停止
+sh /data/adb/modules/picoclaw/action.sh stop
+
+# 重启
+sh /data/adb/modules/picoclaw/action.sh restart
+
+# 查看状态
+sh /data/adb/modules/picoclaw/action.sh status
+
+# 查看日志
+sh /data/adb/modules/picoclaw/action.sh log
 ```
 
 ## 访问
@@ -42,28 +61,21 @@
 - **Web Dashboard**: http://设备IP:12088
 - **Gateway API**: http://设备IP:18790
 
-## 局域网访问
-
-Web Dashboard 默认绑定 `0.0.0.0`，局域网内可直接访问。
-
-## 工作目录
-
-智能体执行文件读写操作时使用的基础目录：`/sdcard/picoclaw/workspace`
-
 ## 端口
 
 - Web Dashboard: `12088`
 - Gateway API: `18790`
 
-## 构建
+## 工作目录
 
-```bash
-# 编译 ARM64 版本
-make build-android
+智能体执行文件读写操作时使用的基础目录：`/sdcard/picoclaw/workspace`
 
-# 构建 Magisk 模块
-make package
-```
+## 日志位置
+
+- 核心日志: `/sdcard/picoclaw/logs/picoclaw.log`
+- Web日志: `/sdcard/picoclaw/logs/picoclaw-web.log`
+- 守护日志: `/sdcard/picoclaw/logs/picoclaw_core.log`
+- 操作日志: `/sdcard/picoclaw/logs/action.log`
 
 ## 项目信息
 

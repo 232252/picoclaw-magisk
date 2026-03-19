@@ -1,0 +1,61 @@
+{
+  "session": {
+    "dm_scope": "per-channel-peer"
+  },
+  "agents": {
+    "defaults": {
+      "workspace": "/sdcard/picoclaw/workspace",
+      "restrict_to_workspace": true,
+      "allow_read_outside_workspace": false,
+      "provider": "",
+      "model_name": "",
+      "max_tokens": 4096,
+      "max_tool_iterations": 50,
+      "summarize_message_threshold": 20,
+      "summarize_token_percent": 75,
+      "tool_feedback": {
+        "enabled": true,
+        "max_args_length": 300
+      }
+    }
+  },
+  "providers": {
+    "openai": {
+      "api_key": "",
+      "api_base": ""
+    }
+  },
+  "model_list": [],
+  "channels": {
+    "pico": {
+      "enabled": true
+    }
+  },
+  "gateway": {
+    "host": "0.0.0.0",
+    "port": 18790,
+    "hot_reload": false
+  },
+  "tools": {
+    "allow_read_paths": null,
+    "allow_write_paths": null,
+    "web": { "enabled": true },
+    "list_dir": { "enabled": true },
+    "message": { "enabled": true },
+    "read_file": { "enabled": true, "max_read_file_size": 65536 },
+    "send_file": { "enabled": true },
+    "spawn": { "enabled": true },
+    "spawn_status": { "enabled": false },
+    "spi": { "enabled": false },
+    "subagent": { "enabled": true },
+    "web_fetch": { "enabled": true },
+    "write_file": { "enabled": true },
+    "exec": { "enabled": true },
+    "cron": { "enabled": true },
+    "find_skills": { "enabled": true },
+    "install_skill": { "enabled": true }
+  },
+  "heartbeat": { "enabled": true, "interval": 30 },
+  "devices": { "enabled": false, "monitor_usb": false },
+  "voice": { "echo_transcription": false }
+}
