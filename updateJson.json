@@ -1,6 +1,8 @@
 {
-  "version": "v0.4.1",
-  "versionCode": 401,
-  "zipUrl": "https://github.com/232252/picoclaw-magisk/releases/download/v0.4.1/picoclaw-magisk-v0.4.1.zip",
-  "changelog": "v0.4.1: 修复 tool.sh 语法错误，更新为 picoclaw v0.2.3，修复配置"
+  "version": "v0.4.3",
+  "versionCode": 403,
+  "zipUrl": "https://github.com/232252/picoclaw-magisk/releases/download/v0.4.3/picoclaw-magisk-v0.4.3.zip",
+  "changelog": "v0.4.3: 修复 SSL_CERT_FILE 环境变量传递 | 修复 max_tokens 过大问题",
+  "size": 16014172,
+  "date": "2026-03-28"
 }
