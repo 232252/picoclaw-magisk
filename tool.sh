@@ -124,7 +124,7 @@ update_description() {
   local status="$1"
   case "$status" in
     running)
-      sed -i "s|^description=.*|description=PicoClaw AI助手 v0.4.0 | TZ: Asia/Shanghai | DNS: $DNS1 | Web: http://IP:18800 | Gateway: http://IP:18790|" "$MODDIR/module.prop" 2>/dev/null
+      sed -i "s|^description=.*|description=PicoClaw AI助手 v0.4.1 | TZ: Asia/Shanghai | DNS: $DNS1 | Web: http://IP:18800 | Gateway: http://IP:18790|" "$MODDIR/module.prop" 2>/dev/null
       ;;
     stopped)
       sed -i "s|^description=.*|description=PicoClaw AI助手 | [状态]已停止|" "$MODDIR/module.prop" 2>/dev/null
@@ -168,7 +168,11 @@ start_picoclaw() {
   # 使用循环守护，防止 launcher 退出
   (
     while true; do
-      HOME="$PICOCLAW_HOME" TZ="$TZ" DNS1="$DNS1" DNS2="$DNS2" DNS3="$DNS3" "$MODDIR/picoclaw-launcher" -public -port 18800 "$CONFIG" >> "$LOGFILE" 2>&1
+      HOME="$PICOCLAW_HOME" \
+      TZ="$TZ" \
+      DNS1="$DNS1" DNS2="$DNS2" DNS3="$DNS3" \
+      SSL_CERT_FILE="/system/etc/security/cacerts" \
+      "$MODDIR/picoclaw-launcher" -public -port 18800 "$CONFIG" >> "$LOGFILE" 2>&1
       log_info "Launcher 退出，5秒后重启..."
       sleep 5
     done
@@ -250,8 +254,7 @@ show_dns() {
 run_cmd() {
   case "$1" in
     1|start)
-      cleanup_pidfile
-      start_all
+      cleanup_pidfile      start_all
       if is_picoclaw_running; then
         update_description running
         echo "服务已启动"
@@ -260,7 +263,8 @@ run_cmd() {
         echo "服务启动失败"
       fi
       ;;
-    2|stop      stop_all
+    2|stop)
+      stop_all
       update_description stopped
       echo "服务已停止"
       ;;

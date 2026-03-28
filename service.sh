@@ -17,6 +17,10 @@ MODDIR=${0%/*}
 # 设置时区 (解决时区问题)
 export TZ=Asia/Shanghai
 
+# Go TLS 证书配置 (解决 x509 证书验证问题)
+export SSL_CERT_FILE="/system/etc/security/cacerts"
+export SSL_CERT_DIR="/system/etc/security/cacerts"
+
 # DNS 配置 (解决 DNS 解析问题)
 # 使用 Google DNS + 阿里 DNS + 114 DNS 组合
 setup_dns() {

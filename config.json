@@ -2,30 +2,46 @@
   "session": {
     "dm_scope": "per-channel-peer"
   },
+  "version": 1,
   "agents": {
     "defaults": {
       "workspace": "/sdcard/picoclaw/workspace",
-      "provider": "default",
+      "restrict_to_workspace": false,
+      "allow_read_outside_workspace": false,
+      "provider": "minimax",
       "model_name": "MiniMax-M2.7",
-      "max_tokens": 32000,
+      "max_tokens": 200000,
       "max_tool_iterations": 50
+    }
+  },
+  "channels": {
+    "feishu": {
+      "enabled": true,
+      "app_id": "cli_a930f9fa05f9dbd7",
+      "allow_from": []
+    },
+    "qq": {
+      "enabled": true,
+      "app_id": "1903596761",
+      "allow_from": []
+    },
+    "pico": {
+      "enabled": true,
+      "ping_interval": 30,
+      "read_timeout": 60,
+      "write_timeout": 10,
+      "max_connections": 100
     }
   },
   "model_list": [
     {
-      "name": "default",
+      "name": "minimax",
       "model_name": "MiniMax-M2.7",
       "model": "MiniMax-M2.7",
-      "api_base": "http://192.168.110.125:3000/v1",
-      "api_key": "YOUR_API_KEY"
+      "api_base": "https://api.minimaxi.com/v1",
+      "api_key": "sk-l6jxmcZcH58rWNtHJcap5SYYzc2euTBNF2LBcyFtgCsoI6Db"
     }
   ],
-  "channels": {
-    "pico": {
-      "enabled": true,
-      "token": "1"
-    }
-  },
   "gateway": {
     "host": "0.0.0.0",
     "port": 18790
@@ -35,6 +51,9 @@
       "enabled": true
     },
     "exec": {
+      "enabled": true
+    },
+    "write_file": {
       "enabled": true
     }
   },
