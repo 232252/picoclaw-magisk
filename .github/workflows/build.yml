@@ -1,0 +1,77 @@
+name: Build Magisk Module
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+env:
+  PICOCLAW_VERSION: nightly
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Download official picoclaw binary
+        run: |
+          wget -q "https://github.com/sipeed/picoclaw/releases/download/${PICOCLAW_VERSION}/picoclaw_Linux_arm64.tar.gz" -O picoclaw.tar.gz
+          tar -xzf picoclaw.tar.gz
+          chmod +x picoclaw picoclaw-launcher picoclaw-launcher-tui
+          ls -la picoclaw picoclaw-launcher
+          
+      - name: Create module directory
+        run: |
+          mkdir -p picoclaw-module
+          cp picoclaw picoclaw-module/
+          cp picoclaw-launcher picoclaw-module/
+          cp picoclaw-launcher-tui picoclaw-module/
+          cp module.prop picoclaw-module/
+          cp service.sh picoclaw-module/
+          cp post-fs-data.sh picoclaw-module/
+          cp customize.sh picoclaw-module/
+          cp action.sh picoclaw-module/
+          cp tool.sh picoclaw-module/
+          cp uninstall.sh picoclaw-module/
+          cp config.json picoclaw-module/
+          ls -la picoclaw-module/
+          
+      - name: Create ZIP
+        run: |
+          cd picoclaw-module
+          zip -r ../picoclaw-magisk.zip .
+          cd ..
+          ls -la picoclaw-magisk.zip
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: picoclaw-magisk
+          path: picoclaw-magisk.zip
+          retention-days: 5
+          
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: picoclaw-magisk
+          path: .
+          
+      - name: Create Release
+        run: |
+          # Delete existing release if any
+          gh release delete ${{ github.ref_name }} --yes || true
+          # Create new release
+          gh release create ${{ github.ref_name }} picoclaw-magisk.zip --title "PicoClaw Magisk ${{ github.ref_name }}"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

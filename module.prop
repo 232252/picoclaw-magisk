@@ -1,0 +1,7 @@
+id=picoclaw
+name=PicoClaw AI Assistant
+version=v0.4.2
+versionCode=402
+author=232252
+description=PicoClaw AI助手 v0.4.2 | TZ: Asia/Shanghai | DNS: 8.8.8.8 | Web: http://IP:18800 | Gateway: http://IP:18790
+updateJson=https://github.com/232252/picoclaw-magisk/releases/latest/download/update.json
