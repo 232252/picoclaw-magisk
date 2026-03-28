@@ -1,7 +1,50 @@
 #!/system/bin/sh
 # PicoClaw Magisk Module - 服务启动脚本
+# 
+# DNS 配置说明：
+#   - 本模块使用 Google DNS (8.8.8.8, 8.8.4.4) 和国内常用 DNS
+#   - DNS 会通过系统属性 net.dns1, net.dns2 设置
+#   - 时区默认设置为 Asia/Shanghai
+#
+# 参考: openp2p-magisk 的环境配置方案
 
 MODDIR=${0%/*}
+
+# ============================================
+# 环境配置 - 参考 openp2p-magisk
+# ============================================
+
+# 设置时区 (解决时区问题)
+export TZ=Asia/Shanghai
+
+# DNS 配置 (解决 DNS 解析问题)
+# 使用 Google DNS + 阿里 DNS + 114 DNS 组合
+setup_dns() {
+    local dns1="${1:-8.8.8.8}"
+    local dns2="${2:-223.5.5.5}"
+    
+    log_info "配置 DNS: $dns1, $dns2"
+    
+    # 设置 Android 系统 DNS 属性
+    setprop net.dns1 "$dns1"
+    setprop net.dns2 "$dns2"
+    
+    # 设置额外的 DNS 属性 (部分设备需要)
+    setprop net.dns1.1 "$dns1"
+    setprop net.dns2.1 "$dns2"
+    
+    # 确保 DNS 全局变量
+    export DNS1="$dns1"
+    export DNS2="$dns2"
+    
+    # 写入 resolv.conf (部分系统需要)
+    if [ -w "/system/etc/resolv.conf" ]; then
+        echo "nameserver $dns1" > /system/etc/resolv.conf
+        echo "nameserver $dns2" >> /system/etc/resolv.conf
+    fi
+    
+    log_info "DNS 配置完成"
+}
 
 # 引入公共函数
 . "$MODDIR/tool.sh"
@@ -84,6 +127,11 @@ start_service() {
 
 # 主逻辑
 log_info "=== PicoClaw 服务启动中 ==="
+log_info "时区: $TZ"
+log_info "DNS: $DNS1, $DNS2"
+
+# 配置 DNS
+setup_dns
 
 # 等待系统就绪
 wait_for_system

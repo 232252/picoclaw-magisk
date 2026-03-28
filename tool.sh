@@ -1,5 +1,10 @@
 #!/system/bin/sh
 # PicoClaw Magisk Module - 公共函数库
+#
+# DNS 和时区配置:
+#   - TZ: Asia/Shanghai (解决日志时间问题)
+#   - DNS: 8.8.8.8, 223.5.5.5, 114.114.114.114 (解决网络解析问题)
+#   - 参考 openp2p-magisk 的环境配置方案
 
 MODDIR=${0%/*}
 MODNAME="picoclaw"
@@ -16,12 +21,41 @@ WEBPORT=18790
 MAX_LOG_SIZE=10485760  # 10MB
 MAX_LOG_FILES=5
 
+# ============================================
+# 环境变量配置 (解决 DNS 和时区问题)
+# ============================================
+
+# 设置时区
+export TZ=Asia/Shanghai
+
+# DNS 配置
+# - DNS1: Google DNS (8.8.8.8)
+# - DNS2: 阿里 DNS (223.5.5.5)  
+# - DNS3: 114 DNS (114.114.114.114)
+export DNS1="${DNS1:-8.8.8.8}"
+export DNS2="${DNS2:-223.5.5.5}"
+export DNS3="${DNS3:-114.114.114.114}"
+
 # 引入环境变量
 export PICOCLAW_HOME
 
-# 日志函数
+# 应用 DNS 配置到系统
+apply_dns_config() {
+    # 设置 Android 系统 DNS 属性
+    if [ -n "$DNS1" ]; then
+        setprop net.dns1 "$DNS1" 2>/dev/null
+    fi
+    if [ -n "$DNS2" ]; then
+        setprop net.dns2 "$DNS2" 2>/dev/null
+    fi
+    if [ -n "$DNS3" ]; then
+        setprop net.dns3 "$DNS3" 2>/dev/null
+    fi
+}
+
+# 日志函数 (带时区信息)
 log() {
-  echo "[$(date '+%Y-%m-%d %H:%M:%S')] $1" >> "$LOGFILE"
+  echo "[$(TZ=Asia/Shanghai date '+%Y-%m-%d %H:%M:%S')] $1" >> "$LOGFILE"
 }
 
 log_info() {
@@ -39,6 +73,9 @@ init_dirs() {
   mkdir -p "$WORKSPACE/skills"
   mkdir -p "$WORKSPACE/memory"
   touch "$LOGFILE"
+  
+  # 应用 DNS 配置
+  apply_dns_config
 }
 
 # 日志轮转
@@ -87,7 +124,7 @@ update_description() {
   local status="$1"
   case "$status" in
     running)
-      sed -i "s|^description=.*|description=PicoClaw AI助手 v0.3.1 | Web: http://IP:18800 | Gateway: http://IP:18790|" "$MODDIR/module.prop" 2>/dev/null
+      sed -i "s|^description=.*|description=PicoClaw AI助手 v0.4.0 | TZ: Asia/Shanghai | DNS: $DNS1 | Web: http://IP:18800 | Gateway: http://IP:18790|" "$MODDIR/module.prop" 2>/dev/null
       ;;
     stopped)
       sed -i "s|^description=.*|description=PicoClaw AI助手 | [状态]已停止|" "$MODDIR/module.prop" 2>/dev/null
@@ -119,6 +156,7 @@ start_picoclaw() {
   fi
   
   log_info "启动 PicoClaw Gateway + Web UI..."
+  log_info "环境配置: TZ=$TZ, DNS=$DNS1,$DNS2,$DNS3"
   
   cd "$MODDIR"
   
@@ -130,7 +168,7 @@ start_picoclaw() {
   # 使用循环守护，防止 launcher 退出
   (
     while true; do
-      HOME="$PICOCLAW_HOME" "$MODDIR/picoclaw-launcher" -public -port 18800 "$CONFIG" >> "$LOGFILE" 2>&1
+      HOME="$PICOCLAW_HOME" TZ="$TZ" DNS1="$DNS1" DNS2="$DNS2" DNS3="$DNS3" "$MODDIR/picoclaw-launcher" -public -port 18800 "$CONFIG" >> "$LOGFILE" 2>&1
       log_info "Launcher 退出，5秒后重启..."
       sleep 5
     done
@@ -193,9 +231,19 @@ PicoClaw 控制面板
   3. restart     - 重启服务
   4. status      - 查看状态
   5. log         - 查看日志
+  6. dns         - 查看 DNS 配置
   0. exit        - 退出
 ==================
 EOF
+}
+
+# 显示 DNS 配置
+show_dns() {
+  echo "当前 DNS 配置:"
+  echo "  DNS1: $DNS1"
+  echo "  DNS2: $DNS2"
+  echo "  DNS3: $DNS3"
+  echo "  时区: $TZ"
 }
 
 # 运行命令
@@ -212,8 +260,7 @@ run_cmd() {
         echo "服务启动失败"
       fi
       ;;
-    2|stop)
-      stop_all
+    2|stop      stop_all
       update_description stopped
       echo "服务已停止"
       ;;
@@ -243,6 +290,9 @@ run_cmd() {
       else
         echo "日志文件不存在"
       fi
+      ;;
+    6|dns)
+      show_dns
       ;;
     help|h|"")
       show_help
