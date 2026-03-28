@@ -4,6 +4,7 @@
 # DNS 和时区配置:
 #   - TZ: Asia/Shanghai (解决日志时间问题)
 #   - DNS: 8.8.8.8, 223.5.5.5, 114.114.114.114 (解决网络解析问题)
+#   - SSL_CERT_FILE: /system/etc/security/cacerts (解决 TLS 证书问题)
 
 MODDIR=${0%/*}
 MODNAME="picoclaw"
@@ -20,10 +21,14 @@ PICOCLAW_CONFIG="$PICOCLAW_CONFIG_DIR/config.json"
 MAX_LOG_SIZE=10485760
 MAX_LOG_FILES=5
 
+# 关键环境变量
 export TZ=Asia/Shanghai
 export DNS1="${DNS1:-8.8.8.8}"
 export DNS2="${DNS2:-223.5.5.5}"
 export DNS3="${DNS3:-114.114.114.114}"
+export SSL_CERT_FILE="/system/etc/security/cacerts"
+export SSL_CERT_DIR="/system/etc/security/cacerts"
+export HOME="$PICOCLAW_HOME"
 export PICOCLAW_HOME
 
 apply_dns_config() {
@@ -48,19 +53,6 @@ init_dirs() {
   mkdir -p "$LOGDIR" "$WORKSPACE" "$WORKSPACE/skills" "$WORKSPACE/memory" "$PICOCLAW_CONFIG_DIR"
   touch "$LOGFILE"
   apply_dns_config
-}
-
-rotate_logs() {
-  if [ -f "$LOGFILE" ]; then
-    local size=$(stat -c%s "$LOGFILE" 2>/dev/null || echo "0")
-    if [ "$size" -gt $MAX_LOG_SIZE ]; then
-      for i in $(seq $((MAX_LOG_FILES - 1)) -1 1); do
-        [ -f "$LOGFILE.$i" ] && mv "$LOGFILE.$i" "$LOGFILE.$((i + 1))"
-      done
-      mv "$LOGFILE" "$LOGFILE.1"
-      touch "$LOGFILE"
-    fi
-  fi
 }
 
 get_pid() {
@@ -89,7 +81,7 @@ update_description() {
   local status="$1"
   case "$status" in
     running)
-      sed -i "s|^description=.*|description=PicoClaw v0.4.2 | TZ: Asia/Shanghai | DNS: $DNS1|" "$MODDIR/module.prop" 2>/dev/null
+      sed -i "s|^description=.*|description=PicoClaw v0.4.3 | TZ: Asia/Shanghai | DNS: $DNS1 | SSL: cacerts|" "$MODDIR/module.prop" 2>/dev/null
       ;;
     stopped)
       sed -i "s|^description=.*|description=PicoClaw AI助手 | [状态]已停止|" "$MODDIR/module.prop" 2>/dev/null
@@ -119,14 +111,23 @@ start_picoclaw() {
   fi
   
   log_info "启动 PicoClaw Gateway + Web UI..."
+  log_info "SSL_CERT_FILE=$SSL_CERT_FILE"
   
   cd "$MODDIR"
-  chmod 755 "$MODDIR/picoclaw" "$MODDIR/picoclaw-launcher" 2>/dev/null
+  chmod 755 "$MODDIR/picoclaw" "$MODDIR/picoclaw-launcher" "$MODDIR/picoclaw-wrapper.sh" 2>/dev/null
   
+  # 使用包装脚本启动，确保环境变量被传递
   (
     while true; do
-      HOME="$PICOCLAW_HOME" TZ="$TZ" DNS1="$DNS1" DNS2="$DNS2" DNS3="$DNS3" \
-      "$MODDIR/picoclaw-launcher" -public -port 18800 "$CONFIG" >> "$LOGFILE" 2>&1
+      # 设置所有环境变量并启动
+      env \
+        TZ="$TZ" \
+        DNS1="$DNS1" DNS2="$DNS2" DNS3="$DNS3" \
+        SSL_CERT_FILE="$SSL_CERT_FILE" \
+        SSL_CERT_DIR="$SSL_CERT_DIR" \
+        HOME="$HOME" \
+        PICOCLAW_HOME="$PICOCLAW_HOME" \
+        "$MODDIR/picoclaw-launcher" -public -port 18800 "$CONFIG" >> "$LOGFILE" 2>&1
       log_info "Launcher 退出，5秒后重启..."
       sleep 5
     done
