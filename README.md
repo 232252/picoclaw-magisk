@@ -123,28 +123,61 @@ sh /data/adb/modules/picoclaw/action.sh log
 
 ## ⚙️ 配置
 
-编辑 `/sdcard/picoclaw/config.json`：
+安装后，编辑 `/sdcard/picoclaw/config.json`（基于上游 v3 配置 Schema）：
+
+### 核心配置项
+
+| 配置项 | 说明 |
+|--------|------|
+| `version: 3` | 配置 Schema 版本 |
+| `agents.defaults.model_name` | 默认使用的模型别名（参考 `model_list`） |
+| `agents.defaults.workspace` | 工作目录 `/sdcard/picoclaw/workspace` |
+| `model_list` | 模型提供商列表，每个条目使用 `api_keys` 数组 |
+| `channel_list` | 消息渠道（QQ/飞书/Telegram/Discord 等） |
+| `tools.*` | 工具开关（web/exec/mcp/skills 等） |
+| `gateway.host/port` | Gateway 监听地址（默认 `0.0.0.0:18790`） |
+
+### 配置渠道示例
+
+编辑 `/sdcard/picoclaw/config.json` 中 `model_list`：
 
 ```json
-{
-  "agents": {
-    "defaults": {
-      "provider": "minimax",
-      "model_name": "MiniMax-M2.7",
-      "max_tokens": 16384,
-      "workspace": "/sdcard/picoclaw/workspace"
-    }
+"model_list": [
+  {
+    "model_name": "gpt-5.4",
+    "model": "openai/gpt-5.4",
+    "api_keys": ["YOUR_OPENAI_API_KEY"],
+    "api_base": "https://api.openai.com/v1"
   },
-  "model_list": [
-    {
-      "model_name": "你的模型名",
-      "model": "模型名",
-      "api_base": "https://api.minimaxi.com/v1",
-      "api_key": "YOUR_API_KEY_HERE"
-    }
-  ]
-}
+  {
+    "model_name": "claude-sonnet-4.6",
+    "model": "anthropic/claude-sonnet-4.6",
+    "api_keys": ["YOUR_ANTHROPIC_API_KEY"],
+    "api_base": "https://api.anthropic.com/v1"
+  },
+  {
+    "model_name": "minimax",
+    "model": "minimax/MiniMax-M2.7",
+    "api_keys": ["YOUR_MINIMAX_API_KEY"],
+    "api_base": "https://api.minimaxi.com/v1"
+  },
+  {
+    "model_name": "deepseek",
+    "model": "deepseek/deepseek-chat",
+    "api_keys": ["YOUR_DEEPSEEK_API_KEY"]
+  },
+  {
+    "model_name": "qwen-plus",
+    "model": "qwen/qwen-plus",
+    "api_keys": ["YOUR_QWEN_API_KEY"],
+    "api_base": "https://dashscope.aliyuncs.com/compatible-mode/v1"
+  }
+]
 ```
+
+### 默认使用的模型
+
+修改 `agents.defaults.model_name` 为你配置好的任一 `model_list` 中的 `model_name` 值即可切换。
 
 ---
 

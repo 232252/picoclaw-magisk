@@ -55,7 +55,7 @@ log_error() {
 }
 
 init_dirs() {
-  mkdir -p "$LOGDIR" "$WORKSPACE" "$WORKSPACE/skills" "$WORKSPACE/memory" "$PICOCLAW_CONFIG_DIR"
+  mkdir -p "$LOGDIR" "$WORKSPACE" "$WORKSPACE/skills" "$WORKSPACE/memory" "$WORKSPACE/sessions" "$WORKSPACE/state" "$WORKSPACE/.picoclaw" "$PICOCLAW_CONFIG_DIR"
   touch "$LOGFILE"
   apply_dns_config
 }
@@ -100,7 +100,7 @@ update_description() {
 check_config() {
   if [ -f "$MODDIR/config.json" ] && [ ! -f "$CONFIG" ]; then
     cp "$MODDIR/config.json" "$CONFIG"
-    log_info "配置已复制到 $CONFIG"
+    log_info "配置已复制到 $CONFIG (version 3)"
   fi
   if [ -f "$CONFIG" ] && [ ! -f "$PICOCLAW_CONFIG" ]; then
     mkdir -p "$PICOCLAW_CONFIG_DIR"

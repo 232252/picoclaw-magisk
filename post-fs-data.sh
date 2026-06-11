@@ -30,5 +30,14 @@ chmod 755 "$MODDIR/tool.sh" "$MODDIR/service.sh" "$MODDIR/action.sh" 2>/dev/null
 setup_dns_early
 
 # 确保目录存在
-mkdir -p /sdcard/picoclaw/workspace
+mkdir -p /sdcard/picoclaw/workspace/skills
+mkdir -p /sdcard/picoclaw/workspace/memory
+mkdir -p /sdcard/picoclaw/workspace/sessions
+mkdir -p /sdcard/picoclaw/workspace/state
 mkdir -p /sdcard/picoclaw/log
+mkdir -p /sdcard/picoclaw/.picoclaw
+
+# 如果用户配置不存在，从模块模板复制 (version 3)
+if [ ! -f "/sdcard/picoclaw/config.json" ] && [ -f "$MODDIR/config.json" ]; then
+    cp "$MODDIR/config.json" "/sdcard/picoclaw/config.json"
+fi
