@@ -203,4 +203,4 @@ sh /data/adb/modules/picoclaw/uninstall.sh
 
 ---
 
-**版本**: v0.4.3 | **基于**: sipeed/picoclaw v0.2.3 | **构建**: Go 1.25.7
+**版本**: v0.4.3 | **基于**: sipeed/picoclaw v0.2.9 | **构建**: Go 1.25.7

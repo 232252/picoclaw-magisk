@@ -5,9 +5,15 @@ on:
     tags:
       - 'v*'
   workflow_dispatch:
+    inputs:
+      picoclaw_version:
+        description: 'PicoClaw version to build (e.g., v0.2.9, nightly)'
+        required: false
+        default: 'nightly'
+        type: string
 
 env:
-  PICOCLAW_VERSION: nightly
+  PICOCLAW_VERSION: ${{ github.event.inputs.picoclaw_version || 'nightly' }}
 
 jobs:
   build:
@@ -42,15 +48,15 @@ jobs:
       - name: Create ZIP
         run: |
           cd picoclaw-module
-          zip -r ../picoclaw-magisk.zip .
+          zip -r ../picoclaw-magisk-${PICOCLAW_VERSION}.zip .
           cd ..
-          ls -la picoclaw-magisk.zip
+          ls -la picoclaw-magisk-*.zip
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: picoclaw-magisk
-          path: picoclaw-magisk.zip
+          name: picoclaw-magisk-${{ env.PICOCLAW_VERSION }}
+          path: picoclaw-magisk-${{ env.PICOCLAW_VERSION }}.zip
           retention-days: 5
           
   release:
@@ -64,14 +70,16 @@ jobs:
       - name: Download artifact
         uses: actions/download-artifact@v4
         with:
-          name: picoclaw-magisk
+          name: picoclaw-magisk-${{ env.PICOCLAW_VERSION }}
           path: .
           
       - name: Create Release
         run: |
+          # Find the downloaded zip file
+          ZIP_FILE=$(ls picoclaw-magisk-*.zip | head -1)
           # Delete existing release if any
           gh release delete ${{ github.ref_name }} --yes || true
           # Create new release
-          gh release create ${{ github.ref_name }} picoclaw-magisk.zip --title "PicoClaw Magisk ${{ github.ref_name }}"
+          gh release create ${{ github.ref_name }} "$ZIP_FILE" --title "PicoClaw Magisk ${{ github.ref_name }}"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
