@@ -39,7 +39,7 @@
       "model_name": "MiniMax-M2.7",
       "model": "MiniMax-M2.7",
       "api_base": "https://api.minimaxi.com/v1",
-      "api_key": "sk-l6jxmcZcH58rWNtHJcap5SYYzc2euTBNF2LBcyFtgCsoI6Db"
+      "api_key": "YOUR_API_KEY_HERE"
     }
   ],
   "gateway": {

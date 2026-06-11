@@ -140,7 +140,7 @@ sh /data/adb/modules/picoclaw/action.sh log
       "model_name": "你的模型名",
       "model": "模型名",
       "api_base": "https://api.minimaxi.com/v1",
-      "api_key": "your-api-key"
+      "api_key": "YOUR_API_KEY_HERE"
     }
   ]
 }

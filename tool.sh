@@ -35,6 +35,11 @@ apply_dns_config() {
     setprop net.dns1 "$DNS1" 2>/dev/null
     setprop net.dns2 "$DNS2" 2>/dev/null
     setprop net.dns3 "$DNS3" 2>/dev/null
+    # Android 8+ 使用 settings put global
+    if [ "$(getprop ro.build.version.sdk)" -ge 26 ]; then
+        settings put global dns1 "$DNS1" 2>/dev/null
+        settings put global dns2 "$DNS2" 2>/dev/null
+    fi
 }
 
 log() {

@@ -10,9 +10,16 @@ export TZ=Asia/Shanghai
 # 配置 DNS (解决网络解析问题)
 setup_dns_early() {
     # 在早期就设置 DNS，确保网络服务能正确解析
+    # 使用多种方式确保兼容性
     setprop net.dns1 "8.8.8.8" 2>/dev/null
     setprop net.dns2 "223.5.5.5" 2>/dev/null
     setprop net.dns3 "114.114.114.114" 2>/dev/null
+
+    # Android 8+ 使用 settings put global (需要 root)
+    if [ "$(getprop ro.build.version.sdk)" -ge 26 ]; then
+        settings put global dns1 8.8.8.8 2>/dev/null
+        settings put global dns2 223.5.5.5 2>/dev/null
+    fi
 }
 
 # 修复二进制文件权限

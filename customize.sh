@@ -11,7 +11,7 @@ MODPATH="${0%/*}"
 
 ui_print "=========================================="
 ui_print "  PicoClaw AI 助手模块"
-ui_print "  版本: v0.4.0"
+ui_print "  版本: v0.4.3"
 ui_print "=========================================="
 
 ARCH=$(getprop ro.product.cpu.abi)

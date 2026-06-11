@@ -15,5 +15,11 @@ export PICOCLAW_HOME="/sdcard/picoclaw"
 MODDIR=${0%/*}
 CONFIG="/sdcard/picoclaw/config.json"
 
+# 配置 DNS (Android 8+)
+if [ "$(getprop ro.build.version.sdk)" -ge 26 ]; then
+    settings put global dns1 8.8.8.8 2>/dev/null
+    settings put global dns2 223.5.5.5 2>/dev/null
+fi
+
 # 启动 picoclaw-launcher
 exec "$MODDIR/picoclaw-launcher" -public -port 18800 "$CONFIG"

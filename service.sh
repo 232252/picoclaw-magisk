@@ -37,10 +37,16 @@ log_error() {
 
 # DNS 配置
 setup_dns() {
-  log_info "配置 DNS: $DNS1, $DNS2"
+  log_info "配置 DNS: $DNS1, $DNS2, $DNS3"
   setprop net.dns1 "$DNS1" 2>/dev/null
   setprop net.dns2 "$DNS2" 2>/dev/null
   setprop net.dns3 "$DNS3" 2>/dev/null
+
+  # Android 8+ 使用 settings put global
+  if [ "$(getprop ro.build.version.sdk)" -ge 26 ]; then
+    settings put global dns1 "$DNS1" 2>/dev/null
+    settings put global dns2 "$DNS2" 2>/dev/null
+  fi
   log_info "DNS 配置完成"
 }
 
@@ -48,37 +54,41 @@ setup_dns() {
 wait_for_system() {
   local timeout=120
   local count=0
-  
+
   log_info "等待系统启动..."
-  
+
   while [ ! -d "/system/bin" ] && [ $count -lt $timeout ]; do
     sleep 1
     count=$((count + 1))
   done
-  
+
   count=0
   while [ "$(getprop sys.boot_completed)" != "1" ] && [ $count -lt $timeout ]; do
     sleep 2
     count=$((count + 2))
   done
-  
+
   count=0
   while [ ! -d "/sdcard" ] && [ $count -lt $timeout ]; do
     sleep 1
     count=$((count + 1))
   done
-  
+
+  # 等待网络就绪 (通过 connectivity check)
   count=0
-  while [ $count -lt 15 ]; do
-    if ping -c 1 -W 2 8.8.8.8 > /dev/null 2>&1; then
-      log_info "网络就绪"
-      break
+  while [ $count -lt 30 ]; do
+    if getprop sys.boot_completed | grep -q "1" && [ -d "/sdcard" ]; then
+      # 网络检测: 尝试解析域名
+      if getprop net.dns1 > /dev/null 2>&1 || [ -f "/system/etc/security/cacerts" ]; then
+        log_info "系统就绪"
+        return 0
+      fi
     fi
     sleep 2
     count=$((count + 2))
   done
-  
-  log_info "系统就绪"
+
+  log_info "系统就绪 (基础检查完成)"
 }
 
 # 引入公共函数
