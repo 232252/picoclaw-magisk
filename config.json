@@ -1,4 +1,5 @@
 {
+  "_comment": "模块默认配置 - 真实部署时会在 /sdcard/picoclaw/config.json 创建用户配置。请填入真实 API key 等敏感信息,不要提交到 git",
   "session": {
     "dm_scope": "per-channel-peer"
   },
@@ -16,13 +17,15 @@
   },
   "channels": {
     "feishu": {
-      "enabled": true,
-      "app_id": "cli_a930f9fa05f9dbd7",
+      "enabled": false,
+      "app_id": "",
+      "app_secret": "",
       "allow_from": []
     },
     "qq": {
-      "enabled": true,
-      "app_id": "1903596761",
+      "enabled": false,
+      "app_id": "",
+      "app_secret": "",
       "allow_from": []
     },
     "pico": {
@@ -39,7 +42,7 @@
       "model_name": "MiniMax-M2.7",
       "model": "MiniMax-M2.7",
       "api_base": "https://api.minimaxi.com/v1",
-      "api_key": "sk-l6jxmcZcH58rWNtHJcap5SYYzc2euTBNF2LBcyFtgCsoI6Db"
+      "api_key": "PLEASE_FILL_YOUR_API_KEY"
     }
   ],
   "gateway": {

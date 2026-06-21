@@ -1,0 +1,66 @@
+{
+  "_comment": "示例配置 - 实际部署时请复制为 /sdcard/picoclaw/config.json 并填写真实凭据。注意:本文件不要提交到 git!",
+  "session": {
+    "dm_scope": "per-channel-peer"
+  },
+  "version": 1,
+  "agents": {
+    "defaults": {
+      "workspace": "/sdcard/picoclaw/workspace",
+      "restrict_to_workspace": false,
+      "allow_read_outside_workspace": false,
+      "provider": "minimax",
+      "model_name": "MiniMax-M2.7",
+      "max_tokens": 200000,
+      "max_tool_iterations": 50
+    }
+  },
+  "channels": {
+    "feishu": {
+      "enabled": false,
+      "app_id": "YOUR_FEISHU_APP_ID",
+      "app_secret": "YOUR_FEISHU_APP_SECRET",
+      "allow_from": []
+    },
+    "qq": {
+      "enabled": false,
+      "app_id": "YOUR_QQ_APP_ID",
+      "app_secret": "YOUR_QQ_APP_SECRET",
+      "allow_from": []
+    },
+    "pico": {
+      "enabled": true,
+      "ping_interval": 30,
+      "read_timeout": 60,
+      "write_timeout": 10,
+      "max_connections": 100
+    }
+  },
+  "model_list": [
+    {
+      "name": "minimax",
+      "model_name": "MiniMax-M2.7",
+      "model": "MiniMax-M2.7",
+      "api_base": "https://api.minimaxi.com/v1",
+      "api_key": "YOUR_API_KEY_HERE"
+    }
+  ],
+  "gateway": {
+    "host": "0.0.0.0",
+    "port": 18790
+  },
+  "tools": {
+    "web": {
+      "enabled": true
+    },
+    "exec": {
+      "enabled": true
+    },
+    "write_file": {
+      "enabled": true
+    }
+  },
+  "heartbeat": {
+    "enabled": false
+  }
+}

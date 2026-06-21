@@ -5,9 +5,16 @@ on:
     tags:
       - 'v*'
   workflow_dispatch:
+    inputs:
+      picoclaw_version:
+        description: 'Upstream picoclaw version (e.g. v0.2.7)'
+        required: true
+        default: 'v0.2.7'
 
 env:
-  PICOCLAW_VERSION: nightly
+  # 默认从 v0.2.7 取 (最后一个含 picoclaw-launcher-tui 的版本)
+  # v0.2.9 已移除 tui
+  PICOCLAW_VERSION: v0.2.7
 
 jobs:
   build:
@@ -16,12 +23,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       
-      - name: Download official picoclaw binary
+      - name: Download upstream picoclaw (Linux arm64)
         run: |
-          wget -q "https://github.com/sipeed/picoclaw/releases/download/${PICOCLAW_VERSION}/picoclaw_Linux_arm64.tar.gz" -O picoclaw.tar.gz
+          # v0.2.7+ 提供 picoclaw_Linux_arm64.tar.gz (含 picoclaw + picoclaw-launcher + picoclaw-launcher-tui)
+          wget -q --tries=3 --timeout=60 \
+            "https://github.com/sipeed/picoclaw/releases/download/${PICOCLAW_VERSION}/picoclaw_Linux_arm64.tar.gz" \
+            -O picoclaw.tar.gz
           tar -xzf picoclaw.tar.gz
           chmod +x picoclaw picoclaw-launcher picoclaw-launcher-tui
-          ls -la picoclaw picoclaw-launcher
+          ls -la picoclaw picoclaw-launcher picoclaw-launcher-tui
           
       - name: Create module directory
         run: |
@@ -36,7 +46,9 @@ jobs:
           cp action.sh picoclaw-module/
           cp tool.sh picoclaw-module/
           cp uninstall.sh picoclaw-module/
-          cp config.json picoclaw-module/
+          # 只放示例配置,不放可能含敏感信息的 config.json
+          cp config.example.json picoclaw-module/config.example.json
+          cp .gitignore picoclaw-module/.gitignore
           ls -la picoclaw-module/
           
       - name: Create ZIP
@@ -71,7 +83,11 @@ jobs:
         run: |
           # Delete existing release if any
           gh release delete ${{ github.ref_name }} --yes || true
-          # Create new release
-          gh release create ${{ github.ref_name }} picoclaw-magisk.zip --title "PicoClaw Magisk ${{ github.ref_name }}"
+          # Create new release with sanitized filename
+          ZIP_NAME="picoclaw-magisk-${GITHUB_REF_NAME}.zip"
+          mv picoclaw-magisk.zip "$ZIP_NAME"
+          gh release create "${{ github.ref_name }}" "$ZIP_NAME" \
+            --title "PicoClaw Magisk ${{ github.ref_name }}" \
+            --notes-file CHANGELOG.md
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
