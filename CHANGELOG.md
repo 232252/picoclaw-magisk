@@ -1,3 +1,10 @@
+## v0.4.5 (2026-06-30)
+
+- 🧹 **清理**: 移除冗余 zip（改由 GitHub Actions 自动构建发布）
+- 📝 **强化 .gitignore**: 添加 zip / 运行时产物 / 敏感文件规则
+- 📦 **重新打包**: 验证所有二进制 + 脚本可用性，确保兼容性
+- 🔧 保留上游 picoclaw v0.2.7 + picoclaw-launcher + picoclaw-launcher-tui
+
 # Changelog
 
 ## v0.4.4 (2026-06-21)

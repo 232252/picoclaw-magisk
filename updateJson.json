@@ -1,8 +1,8 @@
 {
-  "version": "v0.4.4",
-  "versionCode": 404,
-  "zipUrl": "https://github.com/232252/picoclaw-magisk/releases/download/v0.4.4/picoclaw-magisk-v0.4.4.zip",
-  "changelog": "v0.4.4: 同步上游 picoclaw v0.2.7",
-  "size": 30212280,
-  "date": "2026-06-21"
+  "version": "v0.4.5",
+  "versionCode": 405,
+  "zipUrl": "https://github.com/232252/picoclaw-magisk/releases/download/v0.4.5/picoclaw-magisk-v0.4.5.zip",
+  "changelog": "v0.4.5: 重新打包 - 清理冗余 zip + 强化 .gitignore",
+  "size": 22367995,
+  "date": "2026-06-30"
 }
