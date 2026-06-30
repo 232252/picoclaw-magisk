@@ -4,3 +4,20 @@ config.json
 *.log
 __pycache__/
 *.pyc
+
+# 构建产物 - 由 GitHub Actions 自动生成
+*.zip
+
+# 运行时产物
+*.pid
+*.sock
+*.tmp
+runtime/
+logs/
+
+# 敏感文件
+.env
+.env.*
+*.key
+*.pem
+_archive/
